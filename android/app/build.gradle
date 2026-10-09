@@ -1,0 +1,26 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.virtualphone.i9'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.virtualphone.i9'
+        minSdk 18
+        //noinspection ExpiredTargetSdkVersion
+        targetSdk 28
+        versionCode 3
+        versionName 'v1.0 Alpha'
+    }
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
+}
+
+dependencies {
+    implementation 'org.java-websocket:Java-WebSocket:1.5.7'
+}
