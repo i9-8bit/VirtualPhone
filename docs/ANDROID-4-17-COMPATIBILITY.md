@@ -5,18 +5,18 @@ This is a compatibility baseline, not a claim that every OS/device combination h
 ## Build range
 
 - Minimum install API: 14 (Android 4.0).
-- Compile/target SDK: 37 (Android 17).
-- Android Gradle Plugin: 8.9.2.
-- Gradle wrapper: 8.11.1.
+- Compile/target SDK: 37 (Android 17 / API 37.0).
+- Android Gradle Plugin: 9.4.0.
+- Gradle wrapper: 9.6.0.
 - Java source/target: 8.
 
-The launcher activity uses the explicit class name `com.virtualphone.MainActivity`; the installed application ID remains `com.virtualphone.i9`. View background calls use the API-14-compatible method.
+The launcher activity uses the explicit class name `com.virtualphone.MainActivity`; the installed application ID remains `com.virtualphone.i9`. View background calls use the API-14-compatible method. AGP and Gradle are aligned with API 37.0 support.
 
 ## TLS behavior and security
 
 The dependency remains on Java-WebSocket 1.3.9, the version already tested by the developer on Android 4.3. WSS connections use a host-aware TLS socket created off the UI thread, enable TLS 1.3 and/or 1.2 when supported by the system provider, retain the platform certificate-chain validation, and explicitly verify the TLS hostname in `onOpen()` before sending the app's authentication message.
 
-Important security caveat: Java-WebSocket versions through 1.4.1 are listed as affected by CVE-2020-11050 when hostname validation is not performed. VirtualPhone's explicit hostname check is a compensating control for its current connection flow and must never be removed. A future dependency upgrade should use a patched library version with legacy API references repaired, rather than removing the hostname check or accepting any certificate.
+Important security caveat: Java-WebSocket versions through 1.4.1 are listed as affected by CVE-2020-11050 when hostname validation is not performed. VirtualPhone's explicit hostname check is a compensating control for its current connection flow and must never be removed. A future dependency upgrade should use a patched library version with legacy APIs repaired, rather than removing the hostname check or accepting any certificate.
 
 This implementation deliberately does **not** fall back to TLS 1.0 or TLS 1.1. Some Android 4.0/4.1 devices lack TLS 1.2 or sufficiently current root certificates. On those devices, the app may open but be unable to connect to modern HTTPS/WSS services. Full networking support on those OS releases requires a separately licensed, security-audited TLS provider with certificate-chain and hostname verification implemented correctly. This branch does not embed Wolfius.
 
