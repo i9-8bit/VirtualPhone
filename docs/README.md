@@ -29,3 +29,7 @@ After an authenticated user is in an active call, binary WebSocket frames are ra
 
 ## Production upgrade
 Use WSS behind HTTPS, JWT/session authentication, WebRTC/Opus for modern clients, STUN/TURN, a legacy media gateway for API-18 Android, rate limits, call timeouts, push notifications, and persistent storage.
+
+## Compatibility notes
+
+See [ANDROID-4-17-COMPATIBILITY.md](ANDROID-4-17-COMPATIBILITY.md) for the build baseline, TLS constraints, Android 17 local-network permission, and the required device test matrix.

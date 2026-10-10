@@ -25,7 +25,6 @@ import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
@@ -104,6 +103,56 @@ public class MainActivity extends Activity {
     }
   }
 
+  private static final int REQUEST_LOCAL_NETWORK = 3701;
+
+  @Override
+  public void onRequestPermissionsResult(
+          int requestCode, String[] permissions, int[] grantResults) {
+    // Avoid invoking API-23-only superclass methods on Android 4.x.
+    if (requestCode == REQUEST_LOCAL_NETWORK) {
+      if (grantResults.length > 0
+              && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        connect();
+      } else {
+        Toast.makeText(this,
+                "Allow Local Network access to connect to a server on your Wi-Fi.",
+                Toast.LENGTH_LONG).show();
+      }
+    }
+  }
+
+  private boolean isLikelyLocalNetworkHost(String host) {
+    if (host == null) return false;
+    String h = host.trim().toLowerCase(java.util.Locale.US);
+    if (h.startsWith("[") && h.endsWith("]")) {
+      h = h.substring(1, h.length() - 1);
+    }
+    if ("localhost".equals(h) || h.endsWith(".local")
+            || h.endsWith(".lan") || h.endsWith(".home")) return true;
+    if ("::1".equals(h) || h.startsWith("fe80:")
+            || h.startsWith("fc") || h.startsWith("fd")) return true;
+    String[] octets = h.split("\\.");
+    if (octets.length == 4) {
+      try {
+        int x = Integer.parseInt(octets[0]);
+        int y = Integer.parseInt(octets[1]);
+        int z = Integer.parseInt(octets[2]);
+        int w = Integer.parseInt(octets[3]);
+        if (x < 0 || x > 255 || y < 0 || y > 255
+                || z < 0 || z > 255 || w < 0 || w > 255) return false;
+        return x == 10 || x == 127 || (x == 169 && y == 254)
+                || (x == 172 && y >= 16 && y <= 31)
+                || (x == 192 && y == 168)
+                || (x == 100 && y >= 64 && y <= 127);
+      } catch (NumberFormatException ignored) {
+        return false;
+      }
+    }
+    // Avoid DNS lookups on the UI thread. Some unusual names that resolve to
+    // a private IP may still need a later refinement of this check.
+    return h.indexOf('.') < 0 && h.indexOf(':') < 0;
+  }
+
   // =========================
   // BUILD ENTIRE UI
   // =========================
@@ -161,7 +210,7 @@ public class MainActivity extends Activity {
             dp(12), dp(7), dp(12), dp(7)
     );
 
-    connectionBadge.setBackground(
+    connectionBadge.setBackgroundDrawable(
             rounded(Color.rgb(40, 43, 55), 50)
     );
 
@@ -687,7 +736,7 @@ public class MainActivity extends Activity {
     );
 
     avatar.setGravity(Gravity.CENTER);
-    avatar.setBackground(
+    avatar.setBackgroundDrawable(
             rounded(PURPLE, 100)
     );
 
@@ -801,7 +850,7 @@ public class MainActivity extends Activity {
         keyButton.setTextColor(TEXT);
         keyButton.setAllCaps(false);
 
-        keyButton.setBackground(
+        keyButton.setBackgroundDrawable(
                 rounded(CARD2, 100)
         );
 
@@ -1030,17 +1079,19 @@ public class MainActivity extends Activity {
 
       final URI endpoint = URI.create(wsUrl);
 
-      ws = new WebSocketClient(endpoint) {
+      // Android 17 requires a runtime permission for direct LAN access.
+      if (Build.VERSION.SDK_INT >= 37
+              && isLikelyLocalNetworkHost(endpoint.getHost())
+              && checkSelfPermission("android.permission.ACCESS_LOCAL_NETWORK")
+                      != PackageManager.PERMISSION_GRANTED) {
+        requestPermissions(
+                new String[]{"android.permission.ACCESS_LOCAL_NETWORK"},
+                REQUEST_LOCAL_NETWORK
+        );
+        return;
+      }
 
-        @Override
-        protected void onSetSSLParameters(SSLParameters sslParameters) {
-          // Android 4.3 does not implement
-          // SSLParameters.setEndpointIdentificationAlgorithm().
-          // Do not call the library's default implementation on old Android.
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            super.onSetSSLParameters(sslParameters);
-          }
-        }
+      ws = new WebSocketClient(endpoint) {
 
         @Override
         public void onOpen(ServerHandshake h) {
@@ -1135,7 +1186,30 @@ public class MainActivity extends Activity {
         }
       };
 
-      ws.connect();
+      // Connecting the raw TCP socket is done off the UI thread. The custom
+      // SSLSocket is host-aware (SNI) and is installed before WebSocketClient
+      // starts, so the library does not create a second TLS wrapper.
+      final WebSocketClient connectingClient = ws;
+      if ("wss".equalsIgnoreCase(endpoint.getScheme())) {
+        Thread tlsConnect = new Thread(new Runnable() {
+          @Override
+          public void run() {
+            try {
+              int tlsPort = endpoint.getPort() > 0 ? endpoint.getPort() : 443;
+              connectingClient.setSocket(
+                      LegacyTlsSocketFactory.createSocket(endpoint.getHost(), tlsPort));
+              connectingClient.connect();
+            } catch (Exception e) {
+              setConnected(false);
+              ui("Secure connection failed: " + e.getMessage());
+              try { connectingClient.close(); } catch (Exception ignored) {}
+            }
+          }
+        }, "VirtualPhone-TLS-connect");
+        tlsConnect.start();
+      } else {
+        connectingClient.connect();
+      }
 
     } catch (Exception e) {
 
@@ -1430,7 +1504,7 @@ public class MainActivity extends Activity {
               dp(10)
       );
 
-      bubble.setBackground(
+      bubble.setBackgroundDrawable(
               rounded(
                       outgoing
                               ? ACCENT
@@ -1611,7 +1685,7 @@ public class MainActivity extends Activity {
                 GREEN
         );
 
-        connectionBadge.setBackground(
+        connectionBadge.setBackgroundDrawable(
                 rounded(
                         Color.rgb(20, 55, 40),
                         50
@@ -1628,7 +1702,7 @@ public class MainActivity extends Activity {
                 MUTED
         );
 
-        connectionBadge.setBackground(
+        connectionBadge.setBackgroundDrawable(
                 rounded(
                         Color.rgb(40, 43, 55),
                         50
@@ -1680,7 +1754,7 @@ public class MainActivity extends Activity {
             0
     );
 
-    e.setBackground(
+    e.setBackgroundDrawable(
             rounded(CARD2, 18)
     );
 
@@ -1712,7 +1786,7 @@ public class MainActivity extends Activity {
 
     b.setAllCaps(false);
 
-    b.setBackground(
+    b.setBackgroundDrawable(
             rounded(color, 20)
     );
 
@@ -1735,7 +1809,7 @@ public class MainActivity extends Activity {
             dp(18)
     );
 
-    l.setBackground(
+    l.setBackgroundDrawable(
             rounded(CARD, 24)
     );
 
