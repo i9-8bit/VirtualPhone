@@ -38,9 +38,14 @@ public class MainActivity extends Activity {
   // BACKEND / CALL VARIABLES
   // =========================
 
+  private static final String DEFAULT_SERVER_URL =
+          "https://clan-rounds-bug-genealogy.trycloudflare.com";
+  private static final String PREFS_NAME = "virtualphone_preferences";
+
   EditText server, userId, peerId;
-  String savedServerUrl = "";
+  String savedServerUrl = DEFAULT_SERVER_URL;
   String savedUserId = "";
+  Button[] navButtons;
   TextView status;
   TextView connectionBadge;
   TextView pageTitle;
@@ -89,6 +94,14 @@ public class MainActivity extends Activity {
       getWindow().setStatusBarColor(BG);
       getWindow().setNavigationBarColor(BG);
     }
+
+    android.content.SharedPreferences prefs =
+            getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+    savedServerUrl = prefs.getString("serverUrl", DEFAULT_SERVER_URL);
+    if (savedServerUrl == null || savedServerUrl.trim().isEmpty()) {
+      savedServerUrl = DEFAULT_SERVER_URL;
+    }
+    savedUserId = prefs.getString("userId", "");
 
     buildApp();
 
@@ -161,7 +174,10 @@ public class MainActivity extends Activity {
 
     LinearLayout root = new LinearLayout(this);
     root.setOrientation(LinearLayout.VERTICAL);
-    root.setBackgroundColor(BG);
+    root.setBackgroundDrawable(new GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            new int[]{Color.rgb(13, 19, 33), BG}
+    ));
 
     // ---------- TOP ----------
     LinearLayout top = new LinearLayout(this);
@@ -218,6 +234,14 @@ public class MainActivity extends Activity {
 
     root.addView(top);
 
+    android.view.View accentRule = new android.view.View(this);
+    accentRule.setBackgroundDrawable(new GradientDrawable(
+            GradientDrawable.Orientation.LEFT_RIGHT,
+            new int[]{ACCENT, PURPLE, GREEN}
+    ));
+    root.addView(accentRule, new LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(3)));
+
     // ---------- CONTENT ----------
     ScrollView scroll = new ScrollView(this);
     scroll.setFillViewport(true);
@@ -253,11 +277,12 @@ public class MainActivity extends Activity {
     String[] navNames = {
             "Home",
             "Calls",
-            "Messages",
-            "Contacts",
-            "Dialer",
-            "Settings"
+            "Chat",
+            "People",
+            "Dial",
+            "Setup"
     };
+    navButtons = new Button[navNames.length];
 
     for (int i = 0; i < navNames.length; i++) {
       final int page = i;
@@ -266,9 +291,11 @@ public class MainActivity extends Activity {
       b.setText(navNames[i]);
       b.setTextSize(11);
       b.setTextColor(MUTED);
+      b.setTextSize(10);
       b.setAllCaps(false);
-      b.setPadding(0, 0, 0, 0);
-      b.setBackgroundColor(Color.TRANSPARENT);
+      b.setPadding(dp(2), 0, dp(2), 0);
+      b.setBackgroundDrawable(rounded(Color.rgb(17, 20, 30), 15));
+      navButtons[i] = b;
 
       b.setOnClickListener(v -> showPage(page));
 
@@ -276,10 +303,11 @@ public class MainActivity extends Activity {
               b,
               new LinearLayout.LayoutParams(
                       0,
-                      dp(58),
+                      dp(50),
                       1
               )
       );
+      params.setMargins(dp(2), 0, dp(2), 0);
     }
 
     root.addView(nav);
@@ -287,6 +315,18 @@ public class MainActivity extends Activity {
     setContentView(root);
 
     showPage(0);
+  }
+
+  private void updateNavigation() {
+    if (navButtons == null) return;
+    for (int i = 0; i < navButtons.length; i++) {
+      boolean selected = i == currentPage;
+      navButtons[i].setTextColor(selected ? Color.WHITE : MUTED);
+      navButtons[i].setBackgroundDrawable(rounded(
+              selected ? Color.rgb(31, 52, 80) : Color.rgb(17, 20, 30),
+              15
+      ));
+    }
   }
 
   // =========================
@@ -303,6 +343,11 @@ public class MainActivity extends Activity {
     }
 
     currentPage = page;
+    updateNavigation();
+    getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit()
+            .putString("serverUrl", savedServerUrl)
+            .putString("userId", savedUserId)
+            .apply();
     pageContainer.removeAllViews();
 
     switch (page) {
@@ -346,27 +391,42 @@ public class MainActivity extends Activity {
 
     addSpace(6);
 
+    LinearLayout hero = card();
+    GradientDrawable heroBackground = new GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            new int[]{Color.rgb(22, 46, 75), Color.rgb(40, 31, 71)}
+    );
+    heroBackground.setCornerRadius(dp(24));
+    hero.setBackgroundDrawable(heroBackground);
+
+    TextView heroTag = text(
+            "VOICE  •  CHAT  •  CONNECT",
+            11,
+            Color.rgb(151, 210, 255),
+            Typeface.BOLD
+    );
+    hero.addView(heroTag);
+    addSpaceTo(hero, 10);
+
     TextView welcome = text(
-            "Your phone,\nconnected.",
-            32,
+            "Your phone,\\nconnected.",
+            29,
             TEXT,
             Typeface.BOLD
     );
-
-    pageContainer.addView(welcome);
-
-    addSpace(8);
+    hero.addView(welcome);
+    addSpaceTo(hero, 8);
 
     TextView subtitle = text(
-            "Make calls through your VirtualPhone server.",
-            15,
-            MUTED,
+            "Make calls and send messages through your VirtualPhone server.",
+            14,
+            Color.rgb(210, 217, 233),
             Typeface.NORMAL
     );
+    hero.addView(subtitle);
+    pageContainer.addView(hero);
 
-    pageContainer.addView(subtitle);
-
-    addSpace(20);
+    addSpace(14);
 
     // Connection card
     LinearLayout connection = card();
@@ -960,7 +1020,8 @@ public class MainActivity extends Activity {
     server = input(
             "Server URL"
     );
-    server.setText(savedServerUrl);
+    server.setText(savedServerUrl == null || savedServerUrl.trim().isEmpty()
+            ? DEFAULT_SERVER_URL : savedServerUrl);
 
     network.addView(
             server,
@@ -969,6 +1030,15 @@ public class MainActivity extends Activity {
                     dp(52)
             )
     );
+
+    addSpaceTo(network, 8);
+    TextView serverHint = text(
+            "Quick Tunnel URL • temporary; it may change when the tunnel restarts.",
+            12,
+            MUTED,
+            Typeface.NORMAL
+    );
+    network.addView(serverHint);
 
     pageContainer.addView(network);
 
@@ -1065,6 +1135,10 @@ public class MainActivity extends Activity {
 
     savedServerUrl = serverUrl;
     savedUserId = uid;
+    getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit()
+            .putString("serverUrl", savedServerUrl)
+            .putString("userId", savedUserId)
+            .apply();
 
     try {
 
@@ -1785,10 +1859,16 @@ public class MainActivity extends Activity {
     );
 
     b.setAllCaps(false);
+    b.setMinimumHeight(dp(50));
+    b.setPadding(dp(12), dp(4), dp(12), dp(4));
 
     b.setBackgroundDrawable(
             rounded(color, 20)
     );
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      b.setElevation(dp(1));
+    }
 
     return b;
   }
@@ -1809,9 +1889,9 @@ public class MainActivity extends Activity {
             dp(18)
     );
 
-    l.setBackgroundDrawable(
-            rounded(CARD, 24)
-    );
+    GradientDrawable cardBackground = rounded(CARD, 24);
+    cardBackground.setStroke(dp(1), Color.rgb(39, 48, 67));
+    l.setBackgroundDrawable(cardBackground);
 
     // View elevation was added in Android 5.0 (API 21).
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
