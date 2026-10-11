@@ -1,4 +1,4 @@
-name: Android compatibility build
+name: Build full APK pack for Android 4–17
 
 on:
   pull_request:
@@ -11,10 +11,10 @@ permissions:
   contents: read
 
 jobs:
-  assemble-debug:
+  build-apk-pack:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out source
+      - name: Check out full source
         uses: actions/checkout@v6
 
       - name: Set up Java 17
@@ -32,16 +32,130 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" --install "platforms;android-37.0" "build-tools;37.0.0"
 
-      - name: Build debug APK
+      - name: Build every full APK
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon --stacktrace :app:assembleCompatibilityTestDebug
+          ./gradlew --no-daemon --stacktrace \
+            assembleAndroid4Debug \
+            assembleAndroid5Debug \
+            assembleAndroid6Debug \
+            assembleAndroid7Debug \
+            assembleAndroid8Debug \
+            assembleAndroid9Debug \
+            assembleAndroid10Debug \
+            assembleAndroid11Debug \
+            assembleAndroid12Debug \
+            assembleAndroid13Debug \
+            assembleAndroid14Debug \
+            assembleAndroid15Debug \
+            assembleAndroid16Debug \
+            assembleAndroid17Debug
 
-      - name: Upload Galaxy S3 compatibility test APK
+      - name: Assemble downloadable ZIP package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/package/APKs dist/package/Source
+
+          copy_apk() {
+            local flavor="$1"
+            local filename="$2"
+            local source="android/app/build/outputs/apk/${flavor}/debug/app-${flavor}-debug.apk"
+            test -f "$source"
+            cp "$source" "dist/package/APKs/$filename"
+          }
+
+          copy_apk android4  "VirtualPhone-Android-4-API-14-to-20.apk"
+          copy_apk android5  "VirtualPhone-Android-5-API-21-to-22.apk"
+          copy_apk android6  "VirtualPhone-Android-6-API-23.apk"
+          copy_apk android7  "VirtualPhone-Android-7-API-24-to-25.apk"
+          copy_apk android8  "VirtualPhone-Android-8-API-26-to-27.apk"
+          copy_apk android9  "VirtualPhone-Android-9-API-28.apk"
+          copy_apk android10 "VirtualPhone-Android-10-API-29.apk"
+          copy_apk android11 "VirtualPhone-Android-11-API-30.apk"
+          copy_apk android12 "VirtualPhone-Android-12-API-31-to-32.apk"
+          copy_apk android13 "VirtualPhone-Android-13-API-33.apk"
+          copy_apk android14 "VirtualPhone-Android-14-API-34.apk"
+          copy_apk android15 "VirtualPhone-Android-15-API-35.apk"
+          copy_apk android16 "VirtualPhone-Android-16-API-36.apk"
+          copy_apk android17 "VirtualPhone-Android-17-API-37.apk"
+
+          git archive --format=zip --output dist/package/Source/VirtualPhone-Full-Source.zip HEAD
+
+          cat > dist/package/README.txt <<'EOF'
+          VirtualPhone — Android 4 through Android 17 APK Pack
+          ====================================================
+
+          APKs/ contains 14 COMPLETE, standalone APKs. These are full app
+          builds, not split APK sets. Install exactly one matching the Android
+          version on your device.
+
+          Android major version   API level range
+          Android 4               14–20 (Android 4.0–4.4 family)
+          Android 5               21–22
+          Android 6               23
+          Android 7               24–25
+          Android 8               26–27
+          Android 9               28
+          Android 10              29
+          Android 11              30
+          Android 12              31–32
+          Android 13              33
+          Android 14              34
+          Android 15              35
+          Android 16              36
+          Android 17              37
+
+          Every APK has its own package ID suffix, so it does not replace the
+          official com.virtualphone.i9 Alpha app. Old-family APKs declare an
+          upper SDK bound to reduce accidental installation on a different
+          Android generation.
+
+          These are debug-signed compatibility builds for testing, not the
+          signed official Alpha release. Android 4.x devices may still have
+          system TLS/root-certificate limitations; no certificate checks are
+          disabled. The ZIP also contains Source/VirtualPhone-Full-Source.zip,
+          the full repository source used to build this entire set.
+
+          Test the APK on the actual hardware/OS before relying on it. A
+          successful build is not the same thing as a physical-device test.
+          EOF
+
+          cd dist
+          zip -qr VirtualPhone-Android-4-to-17-Full-Package.zip package
+
+      - name: Upload complete Android 4–17 ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: VirtualPhone-Galaxy-S3-compat-test
-          path: android/app/build/outputs/apk/compatibilityTest/debug/app-compatibilityTest-debug.apk
+          name: VirtualPhone-Android-4-to-17-Full-Package
+          path: dist/VirtualPhone-Android-4-to-17-Full-Package.zip
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
+
+  publish-compatibility-prerelease:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/compat/android-4-to-17-baseline'
+    needs: build-apk-pack
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download complete ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: VirtualPhone-Android-4-to-17-Full-Package
+          path: dist
+
+      - name: Publish a separate compatibility preview release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="compat-android-4-to-17-${GITHUB_SHA:0:7}"
+          gh release create "$TAG" dist/VirtualPhone-Android-4-to-17-Full-Package.zip \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "VirtualPhone Android 4–17 Compatibility Preview (${GITHUB_SHA:0:7})" \
+            --notes "Pre-release compatibility pack containing 14 full, version-targeted debug APKs (Android 4 through Android 17) and a ZIP of the full source tree. This is for compatibility testing, not the official signed Alpha release. Match the APK to the Android version; test TLS, connection, messages, calls, and permissions on real devices." \
+            --prerelease \
+            --target "${GITHUB_SHA}"

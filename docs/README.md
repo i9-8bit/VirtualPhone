@@ -33,3 +33,7 @@ Use WSS behind HTTPS, JWT/session authentication, WebRTC/Opus for modern clients
 ## Compatibility notes
 
 See [ANDROID-4-17-COMPATIBILITY.md](ANDROID-4-17-COMPATIBILITY.md) for the build baseline, TLS constraints, Android 17 local-network permission, and the required device test matrix.
+
+## Android 4–17 APK pack
+
+See [ANDROID-4-17-COMPATIBILITY.md](ANDROID-4-17-COMPATIBILITY.md) for the 14 standalone APK variants and the downloadable source/package layout. The official Alpha release is kept separate from compatibility preview builds.

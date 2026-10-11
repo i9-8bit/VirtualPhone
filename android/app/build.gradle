@@ -6,23 +6,145 @@ android {
     namespace 'com.virtualphone.i9'
     compileSdk 37
 
-    flavorDimensions += "distribution"
+    flavorDimensions += "androidCompatibility"
 
+    /*
+     * Each flavor is one complete, installable VirtualPhone app for the
+     * corresponding Android major-version family. The suffix keeps each
+     * compatibility APK separate from the official Alpha app and from the
+     * other version-specific APKs.
+     */
     productFlavors {
-        standard {
-            dimension "distribution"
+        android4 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android4"
+            versionCode 104
+            versionName "v1.0 Alpha - Android 4"
+            minSdk 14
+            targetSdk 20
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 4", maxSdkVersion: "20"]
         }
-        compatibilityTest {
-            dimension "distribution"
-            // Allows safe installation alongside the existing Alpha APK.
-            applicationIdSuffix ".compatTest"
-            versionNameSuffix "-compat-test"
+        android5 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android5"
+            versionCode 105
+            versionName "v1.0 Alpha - Android 5"
+            minSdk 21
+            targetSdk 22
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 5", maxSdkVersion: "22"]
+        }
+        android6 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android6"
+            versionCode 106
+            versionName "v1.0 Alpha - Android 6"
+            minSdk 23
+            targetSdk 23
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 6", maxSdkVersion: "23"]
+        }
+        android7 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android7"
+            versionCode 107
+            versionName "v1.0 Alpha - Android 7"
+            minSdk 24
+            targetSdk 25
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 7", maxSdkVersion: "25"]
+        }
+        android8 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android8"
+            versionCode 108
+            versionName "v1.0 Alpha - Android 8"
+            minSdk 26
+            targetSdk 27
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 8", maxSdkVersion: "27"]
+        }
+        android9 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android9"
+            versionCode 109
+            versionName "v1.0 Alpha - Android 9"
+            minSdk 28
+            targetSdk 28
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 9", maxSdkVersion: "28"]
+        }
+        android10 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android10"
+            versionCode 110
+            versionName "v1.0 Alpha - Android 10"
+            minSdk 29
+            targetSdk 29
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 10", maxSdkVersion: "29"]
+        }
+        android11 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android11"
+            versionCode 111
+            versionName "v1.0 Alpha - Android 11"
+            minSdk 30
+            targetSdk 30
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 11", maxSdkVersion: "30"]
+        }
+        android12 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android12"
+            versionCode 112
+            versionName "v1.0 Alpha - Android 12"
+            minSdk 31
+            targetSdk 32
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 12", maxSdkVersion: "32"]
+        }
+        android13 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android13"
+            versionCode 113
+            versionName "v1.0 Alpha - Android 13"
+            minSdk 33
+            targetSdk 33
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 13", maxSdkVersion: "33"]
+        }
+        android14 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android14"
+            versionCode 114
+            versionName "v1.0 Alpha - Android 14"
+            minSdk 34
+            targetSdk 34
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 14", maxSdkVersion: "34"]
+        }
+        android15 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android15"
+            versionCode 115
+            versionName "v1.0 Alpha - Android 15"
+            minSdk 35
+            targetSdk 35
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 15", maxSdkVersion: "35"]
+        }
+        android16 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android16"
+            versionCode 116
+            versionName "v1.0 Alpha - Android 16"
+            minSdk 36
+            targetSdk 36
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 16", maxSdkVersion: "36"]
+        }
+        android17 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android17"
+            versionCode 117
+            versionName "v1.0 Alpha - Android 17"
+            minSdk 37
+            targetSdk 37
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 17", maxSdkVersion: "37"]
         }
     }
 
     defaultConfig {
         applicationId 'com.virtualphone.i9'
-        // Android 4.0 (API 14); actual TLS capability depends on system provider.
         minSdk 14
         targetSdk 37
         versionCode 3
@@ -41,6 +163,6 @@ android {
 }
 
 dependencies {
-    // Preserves the version tested by the developer on Android 4.3.
+    // Kept for compatibility with the developer's Android 4.3 test phone.
     implementation 'org.java-websocket:Java-WebSocket:1.3.9'
 }
