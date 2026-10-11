@@ -15,145 +15,175 @@ android {
      * other version-specific APKs.
      */
     productFlavors {
+        android1 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android1"
+            versionCode 301
+            versionName "v1.2 UI Preview - Android 1"
+            minSdk 1
+            targetSdk 3
+            maxSdk = 3
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 1"]
+        }
+        android2 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android2"
+            versionCode 302
+            versionName "v1.2 UI Preview - Android 2"
+            minSdk 4
+            targetSdk 10
+            maxSdk = 10
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 2"]
+        }
+        android3 {
+            dimension "androidCompatibility"
+            applicationIdSuffix ".android3"
+            versionCode 303
+            versionName "v1.2 UI Preview - Android 3"
+            minSdk 11
+            targetSdk 13
+            maxSdk = 13
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 3"]
+        }
         android4 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android4"
-            versionCode 204
-            versionName "v1.1 UI Preview - Android 4"
+            versionCode 304
+            versionName "v1.2 UI Preview - Android 4"
             minSdk 14
             targetSdk 20
             maxSdk = 20
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 4"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 4"]
         }
         android5 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android5"
-            versionCode 205
-            versionName "v1.1 UI Preview - Android 5"
+            versionCode 305
+            versionName "v1.2 UI Preview - Android 5"
             minSdk 21
             targetSdk 22
             maxSdk = 22
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 5"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 5"]
         }
         android6 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android6"
-            versionCode 206
-            versionName "v1.1 UI Preview - Android 6"
+            versionCode 306
+            versionName "v1.2 UI Preview - Android 6"
             minSdk 23
             targetSdk 23
             maxSdk = 23
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 6"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 6"]
         }
         android7 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android7"
-            versionCode 207
-            versionName "v1.1 UI Preview - Android 7"
+            versionCode 307
+            versionName "v1.2 UI Preview - Android 7"
             minSdk 24
             targetSdk 25
             maxSdk = 25
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 7"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 7"]
         }
         android8 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android8"
-            versionCode 208
-            versionName "v1.1 UI Preview - Android 8"
+            versionCode 308
+            versionName "v1.2 UI Preview - Android 8"
             minSdk 26
             targetSdk 27
             maxSdk = 27
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 8"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 8"]
         }
         android9 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android9"
-            versionCode 209
-            versionName "v1.1 UI Preview - Android 9"
+            versionCode 309
+            versionName "v1.2 UI Preview - Android 9"
             minSdk 28
             targetSdk 28
             maxSdk = 28
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 9"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 9"]
         }
         android10 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android10"
-            versionCode 210
-            versionName "v1.1 UI Preview - Android 10"
+            versionCode 310
+            versionName "v1.2 UI Preview - Android 10"
             minSdk 29
             targetSdk 29
             maxSdk = 29
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 10"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 10"]
         }
         android11 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android11"
-            versionCode 211
-            versionName "v1.1 UI Preview - Android 11"
+            versionCode 311
+            versionName "v1.2 UI Preview - Android 11"
             minSdk 30
             targetSdk 30
             maxSdk = 30
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 11"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 11"]
         }
         android12 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android12"
-            versionCode 212
-            versionName "v1.1 UI Preview - Android 12"
+            versionCode 312
+            versionName "v1.2 UI Preview - Android 12"
             minSdk 31
             targetSdk 32
             maxSdk = 32
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 12"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 12"]
         }
         android13 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android13"
-            versionCode 213
-            versionName "v1.1 UI Preview - Android 13"
+            versionCode 313
+            versionName "v1.2 UI Preview - Android 13"
             minSdk 33
             targetSdk 33
             maxSdk = 33
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 13"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 13"]
         }
         android14 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android14"
-            versionCode 214
-            versionName "v1.1 UI Preview - Android 14"
+            versionCode 314
+            versionName "v1.2 UI Preview - Android 14"
             minSdk 34
             targetSdk 34
             maxSdk = 34
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 14"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 14"]
         }
         android15 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android15"
-            versionCode 215
-            versionName "v1.1 UI Preview - Android 15"
+            versionCode 315
+            versionName "v1.2 UI Preview - Android 15"
             minSdk 35
             targetSdk 35
             maxSdk = 35
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 15"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 15"]
         }
         android16 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android16"
-            versionCode 216
-            versionName "v1.1 UI Preview - Android 16"
+            versionCode 316
+            versionName "v1.2 UI Preview - Android 16"
             minSdk 36
             targetSdk 36
             maxSdk = 36
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 16"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 16"]
         }
         android17 {
             dimension "androidCompatibility"
             applicationIdSuffix ".android17"
-            versionCode 217
-            versionName "v1.1 UI Preview - Android 17"
+            versionCode 317
+            versionName "v1.2 UI Preview - Android 17"
             minSdk 37
             targetSdk 37
             maxSdk = 37
-            manifestPlaceholders = [appLabel: "VirtualPhone 1.1 - Android 17"]
+            manifestPlaceholders = [appLabel: "VirtualPhone 1.2 - Android 17"]
         }
     }
 
@@ -162,7 +192,7 @@ android {
         minSdk 14
         targetSdk 37
         versionCode 3
-        versionName 'v1.0 Alpha'
+        versionName 'v1.2 UI Preview'
     }
 
     compileOptions {
