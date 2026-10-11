@@ -289,7 +289,6 @@ public class MainActivity extends Activity {
 
       Button b = new Button(this);
       b.setText(navNames[i]);
-      b.setTextSize(11);
       b.setTextColor(MUTED);
       b.setTextSize(10);
       b.setAllCaps(false);
@@ -299,15 +298,11 @@ public class MainActivity extends Activity {
 
       b.setOnClickListener(v -> showPage(page));
 
-      nav.addView(
-              b,
-              new LinearLayout.LayoutParams(
-                      0,
-                      dp(50),
-                      1
-              )
+      LinearLayout.LayoutParams navParams = new LinearLayout.LayoutParams(
+              0, dp(50), 1
       );
-      params.setMargins(dp(2), 0, dp(2), 0);
+      navParams.setMargins(dp(2), 0, dp(2), 0);
+      nav.addView(b, navParams);
     }
 
     root.addView(nav);
@@ -409,7 +404,7 @@ public class MainActivity extends Activity {
     addSpaceTo(hero, 10);
 
     TextView welcome = text(
-            "Your phone,\\nconnected.",
+            "Your phone,\nconnected.",
             29,
             TEXT,
             Typeface.BOLD
