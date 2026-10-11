@@ -14,7 +14,7 @@ The launcher activity uses the explicit class name `com.virtualphone.MainActivit
 
 ## TLS behavior and security
 
-The dependency remains on Java-WebSocket 1.3.9, the version already tested by the developer on Android 4.3. WSS connections use a host-aware TLS socket created off the UI thread, enable TLS 1.3 and/or 1.2 when supported by the system provider, retain the platform certificate-chain validation, and explicitly verify the TLS hostname in `onOpen()` before sending the app's authentication message.
+The dependency remains on Java-WebSocket 1.3.9, the version already tested by the developer on Android 4.3. WSS connections use a host-aware TLS socket created off the UI thread, enable TLS 1.3 and/or 1.2 when supported by the system provider, retain the platform certificate-chain validation, and verify the TLS hostname before the WebSocket HTTP Upgrade handshake. `MainActivity` repeats the hostname check in `onOpen()` before sending app authentication.
 
 Important security caveat: Java-WebSocket versions through 1.4.1 are listed as affected by CVE-2020-11050 when hostname validation is not performed. VirtualPhone's explicit hostname check is a compensating control for its current connection flow and must never be removed. A future dependency upgrade should use a patched library version with legacy APIs repaired, rather than removing the hostname check or accepting any certificate.
 
