@@ -57,7 +57,7 @@ public final class LegacyTlsSocketFactory {
                 }
             }
 
-            if (enabled.isEmpty()) {
+            if (enabled.size() == 0) {
                 try { ssl.close(); } catch (IOException ignored) {}
                 throw new IOException(
                         "No permitted TLS protocol is available. Android 1–3 " +
