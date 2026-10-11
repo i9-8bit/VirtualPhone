@@ -36,4 +36,12 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon --stacktrace :app:assembleDebug
+          ./gradlew --no-daemon --stacktrace :app:assembleCompatibilityTestDebug
+
+      - name: Upload Galaxy S3 compatibility test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VirtualPhone-Galaxy-S3-compat-test
+          path: android/app/build/outputs/apk/compatibilityTest/debug/app-compatibilityTest-debug.apk
+          if-no-files-found: error
+          retention-days: 14
