@@ -1,5 +1,7 @@
 package com.virtualphone;
 
+import android.os.Build;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -35,7 +37,17 @@ public final class LegacyTlsSocketFactory {
 
             String[] supported = ssl.getSupportedProtocols();
             List<String> enabled = new ArrayList<String>();
-            String[] preferred = new String[] {"TLSv1.3", "TLSv1.2"};
+
+            /*
+             * API 1–15 lack a modern TLS stack. When a device owner has
+             * configured a transparent legacy TLS proxy such as Wolfius,
+             * the app-side connection must be able to offer TLS 1.0 to that
+             * local proxy. Certificate-chain and hostname checks remain on.
+             * Without a configured proxy, modern hosts will reject TLS 1.0.
+             */
+            String[] preferred = apiLevel() < 16
+                    ? new String[] {"TLSv1"}
+                    : new String[] {"TLSv1.3", "TLSv1.2"};
             for (String wanted : preferred) {
                 for (String actual : supported) {
                     if (wanted.equals(actual)) {
@@ -48,8 +60,9 @@ public final class LegacyTlsSocketFactory {
             if (enabled.isEmpty()) {
                 try { ssl.close(); } catch (IOException ignored) {}
                 throw new IOException(
-                        "This Android TLS provider lacks TLS 1.2 or newer. " +
-                        "A separately audited legacy TLS provider is required."
+                        "No permitted TLS protocol is available. Android 1–3 " +
+                        "requires a configured legacy TLS proxy; TLS certificate and " +
+                        "hostname validation are not disabled."
                 );
             }
 
@@ -68,6 +81,29 @@ public final class LegacyTlsSocketFactory {
         } catch (IOException e) {
             try { tcp.close(); } catch (IOException ignored) {}
             throw e;
+        }
+    }
+
+    private static int apiLevel() {
+        try {
+            return Build.VERSION.class.getField("SDK_INT").getInt(null);
+        } catch (Exception ignored) {
+            String release = Build.VERSION.RELEASE;
+            if ("1.0".equals(release)) return 1;
+            if ("1.1".equals(release)) return 2;
+            if ("1.5".equals(release)) return 3;
+            if ("1.6".equals(release)) return 4;
+            if ("2.0.1".equals(release)) return 6;
+            if ("2.0".equals(release)) return 5;
+            if ("2.1".equals(release)) return 7;
+            if ("2.2".equals(release)) return 8;
+            if ("2.3".equals(release) || "2.3.1".equals(release)
+                    || "2.3.2".equals(release)) return 9;
+            if (release != null && release.startsWith("2.3")) return 10;
+            if ("3.0".equals(release)) return 11;
+            if ("3.1".equals(release)) return 12;
+            if (release != null && release.startsWith("3.2")) return 13;
+            return 1;
         }
     }
 }
