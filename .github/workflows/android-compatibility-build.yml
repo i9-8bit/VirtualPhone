@@ -129,8 +129,8 @@ jobs:
           and is not bundled in this ZIP. Its current upstream code disables
           verification of the remote server certificate, so do not use that build
           for real accounts or private data. Android 1.0/1.1 are outside Wolfius's
-          stated range. See Source/README.md and the repository guide at
-          docs/ANDROID_1_TO_3_LEGACY_TLS.md for details. No certificate checks are
+          stated range. The full source archive includes README.md and
+          docs/ANDROID_1_TO_3_LEGACY_TLS.md with full setup and security notes. No certificate checks are
           disabled inside VirtualPhone. The ZIP also contains Source/VirtualPhone-v1.2-Full-Source.zip,
           the full repository source used to build this entire set. All APKs prefill the Quick Tunnel URL https://clan-rounds-bug-genealogy.trycloudflare.com. Cloudflare Quick Tunnel URLs are temporary and may change; recreate the tunnel and update Settings if the address expires. This is a testing setup, not a production-secure server.
 
@@ -141,7 +141,7 @@ jobs:
           cd dist
           zip -qr VirtualPhone-v1.2-Android-1-to-17-Full-Package.zip package
 
-      - name: Upload complete Android 4–17 ZIP
+      - name: Upload complete Android 1–17 ZIP
         uses: actions/upload-artifact@v4
         with:
           name: VirtualPhone-v1.2-Android-1-to-17-Full-Package
