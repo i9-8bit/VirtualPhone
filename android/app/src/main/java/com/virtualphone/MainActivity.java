@@ -25,7 +25,6 @@ import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
@@ -39,9 +38,14 @@ public class MainActivity extends Activity {
   // BACKEND / CALL VARIABLES
   // =========================
 
+  private static final String DEFAULT_SERVER_URL =
+          "https://clan-rounds-bug-genealogy.trycloudflare.com";
+  private static final String PREFS_NAME = "virtualphone_preferences";
+
   EditText server, userId, peerId;
-  String savedServerUrl = "";
+  String savedServerUrl = DEFAULT_SERVER_URL;
   String savedUserId = "";
+  Button[] navButtons;
   TextView status;
   TextView connectionBadge;
   TextView pageTitle;
@@ -86,14 +90,22 @@ public class MainActivity extends Activity {
 
     // These Window color APIs were added in Android 5.0 (API 21).
     // The Galaxy S3 on Android 4.3 must skip them.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (apiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
       getWindow().setStatusBarColor(BG);
       getWindow().setNavigationBarColor(BG);
     }
 
+    android.content.SharedPreferences prefs =
+            getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+    savedServerUrl = prefs.getString("serverUrl", DEFAULT_SERVER_URL);
+    if (savedServerUrl == null || savedServerUrl.trim().length() == 0) {
+      savedServerUrl = DEFAULT_SERVER_URL;
+    }
+    savedUserId = prefs.getString("userId", "");
+
     buildApp();
 
-    if (Build.VERSION.SDK_INT >= 23 &&
+    if (apiLevel() >= 23 &&
             checkSelfPermission(Manifest.permission.RECORD_AUDIO)
                     != PackageManager.PERMISSION_GRANTED) {
 
@@ -104,6 +116,83 @@ public class MainActivity extends Activity {
     }
   }
 
+  /*
+   * SDK_INT was added in Android API 4. Reflectively read it so the app can
+   * start on API 1–3 too; fall back to their old release strings on those OSs.
+   */
+  private int apiLevel() {
+    try {
+      return Build.VERSION.class.getField("SDK_INT").getInt(null);
+    } catch (Exception ignored) {
+      String release = Build.VERSION.RELEASE;
+      if ("1.0".equals(release)) return 1;
+      if ("1.1".equals(release)) return 2;
+      if ("1.5".equals(release)) return 3;
+      if ("1.6".equals(release)) return 4;
+      if ("2.0.1".equals(release)) return 6;
+      if ("2.0".equals(release)) return 5;
+      if ("2.1".equals(release)) return 7;
+      if ("2.2".equals(release)) return 8;
+      if ("2.3".equals(release) || "2.3.1".equals(release)
+              || "2.3.2".equals(release)) return 9;
+      if (release != null && release.startsWith("2.3")) return 10;
+      if ("3.0".equals(release)) return 11;
+      if ("3.1".equals(release)) return 12;
+      if (release != null && release.startsWith("3.2")) return 13;
+      return 1;
+    }
+  }
+
+  private static final int REQUEST_LOCAL_NETWORK = 3701;
+
+  @Override
+  public void onRequestPermissionsResult(
+          int requestCode, String[] permissions, int[] grantResults) {
+    // Avoid invoking API-23-only superclass methods on Android 4.x.
+    if (requestCode == REQUEST_LOCAL_NETWORK) {
+      if (grantResults.length > 0
+              && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        connect();
+      } else {
+        Toast.makeText(this,
+                "Allow Local Network access to connect to a server on your Wi-Fi.",
+                Toast.LENGTH_LONG).show();
+      }
+    }
+  }
+
+  private boolean isLikelyLocalNetworkHost(String host) {
+    if (host == null) return false;
+    String h = host.trim().toLowerCase(java.util.Locale.US);
+    if (h.startsWith("[") && h.endsWith("]")) {
+      h = h.substring(1, h.length() - 1);
+    }
+    if ("localhost".equals(h) || h.endsWith(".local")
+            || h.endsWith(".lan") || h.endsWith(".home")) return true;
+    if ("::1".equals(h) || h.startsWith("fe80:")
+            || h.startsWith("fc") || h.startsWith("fd")) return true;
+    String[] octets = h.split("\\.");
+    if (octets.length == 4) {
+      try {
+        int x = Integer.parseInt(octets[0]);
+        int y = Integer.parseInt(octets[1]);
+        int z = Integer.parseInt(octets[2]);
+        int w = Integer.parseInt(octets[3]);
+        if (x < 0 || x > 255 || y < 0 || y > 255
+                || z < 0 || z > 255 || w < 0 || w > 255) return false;
+        return x == 10 || x == 127 || (x == 169 && y == 254)
+                || (x == 172 && y >= 16 && y <= 31)
+                || (x == 192 && y == 168)
+                || (x == 100 && y >= 64 && y <= 127);
+      } catch (NumberFormatException ignored) {
+        return false;
+      }
+    }
+    // Avoid DNS lookups on the UI thread. Some unusual names that resolve to
+    // a private IP may still need a later refinement of this check.
+    return h.indexOf('.') < 0 && h.indexOf(':') < 0;
+  }
+
   // =========================
   // BUILD ENTIRE UI
   // =========================
@@ -112,7 +201,10 @@ public class MainActivity extends Activity {
 
     LinearLayout root = new LinearLayout(this);
     root.setOrientation(LinearLayout.VERTICAL);
-    root.setBackgroundColor(BG);
+    root.setBackgroundDrawable(new GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            new int[]{Color.rgb(13, 19, 33), BG}
+    ));
 
     // ---------- TOP ----------
     LinearLayout top = new LinearLayout(this);
@@ -161,13 +253,21 @@ public class MainActivity extends Activity {
             dp(12), dp(7), dp(12), dp(7)
     );
 
-    connectionBadge.setBackground(
+    connectionBadge.setBackgroundDrawable(
             rounded(Color.rgb(40, 43, 55), 50)
     );
 
     top.addView(connectionBadge);
 
     root.addView(top);
+
+    android.view.View accentRule = new android.view.View(this);
+    accentRule.setBackgroundDrawable(new GradientDrawable(
+            GradientDrawable.Orientation.LEFT_RIGHT,
+            new int[]{ACCENT, PURPLE, GREEN}
+    ));
+    root.addView(accentRule, new LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(3)));
 
     // ---------- CONTENT ----------
     ScrollView scroll = new ScrollView(this);
@@ -204,33 +304,32 @@ public class MainActivity extends Activity {
     String[] navNames = {
             "Home",
             "Calls",
-            "Messages",
-            "Contacts",
-            "Dialer",
-            "Settings"
+            "Chat",
+            "People",
+            "Dial",
+            "Setup"
     };
+    navButtons = new Button[navNames.length];
 
     for (int i = 0; i < navNames.length; i++) {
       final int page = i;
 
       Button b = new Button(this);
       b.setText(navNames[i]);
-      b.setTextSize(11);
       b.setTextColor(MUTED);
-      b.setAllCaps(false);
-      b.setPadding(0, 0, 0, 0);
-      b.setBackgroundColor(Color.TRANSPARENT);
+      b.setTextSize(10);
+      setAllCapsCompat(b, false);
+      b.setPadding(dp(2), 0, dp(2), 0);
+      b.setBackgroundDrawable(rounded(Color.rgb(17, 20, 30), 15));
+      navButtons[i] = b;
 
       b.setOnClickListener(v -> showPage(page));
 
-      nav.addView(
-              b,
-              new LinearLayout.LayoutParams(
-                      0,
-                      dp(58),
-                      1
-              )
+      LinearLayout.LayoutParams navParams = new LinearLayout.LayoutParams(
+              0, dp(50), 1
       );
+      navParams.setMargins(dp(2), 0, dp(2), 0);
+      nav.addView(b, navParams);
     }
 
     root.addView(nav);
@@ -238,6 +337,18 @@ public class MainActivity extends Activity {
     setContentView(root);
 
     showPage(0);
+  }
+
+  private void updateNavigation() {
+    if (navButtons == null) return;
+    for (int i = 0; i < navButtons.length; i++) {
+      boolean selected = i == currentPage;
+      navButtons[i].setTextColor(selected ? Color.WHITE : MUTED);
+      navButtons[i].setBackgroundDrawable(rounded(
+              selected ? Color.rgb(31, 52, 80) : Color.rgb(17, 20, 30),
+              15
+      ));
+    }
   }
 
   // =========================
@@ -254,6 +365,11 @@ public class MainActivity extends Activity {
     }
 
     currentPage = page;
+    updateNavigation();
+    getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit()
+            .putString("serverUrl", savedServerUrl)
+            .putString("userId", savedUserId)
+            .commit();
     pageContainer.removeAllViews();
 
     switch (page) {
@@ -297,27 +413,42 @@ public class MainActivity extends Activity {
 
     addSpace(6);
 
+    LinearLayout hero = card();
+    GradientDrawable heroBackground = new GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            new int[]{Color.rgb(22, 46, 75), Color.rgb(40, 31, 71)}
+    );
+    heroBackground.setCornerRadius(dp(24));
+    hero.setBackgroundDrawable(heroBackground);
+
+    TextView heroTag = text(
+            "VOICE  •  CHAT  •  CONNECT",
+            11,
+            Color.rgb(151, 210, 255),
+            Typeface.BOLD
+    );
+    hero.addView(heroTag);
+    addSpaceTo(hero, 10);
+
     TextView welcome = text(
             "Your phone,\nconnected.",
-            32,
+            29,
             TEXT,
             Typeface.BOLD
     );
-
-    pageContainer.addView(welcome);
-
-    addSpace(8);
+    hero.addView(welcome);
+    addSpaceTo(hero, 8);
 
     TextView subtitle = text(
-            "Make calls through your VirtualPhone server.",
-            15,
-            MUTED,
+            "Make calls and send messages through your VirtualPhone server.",
+            14,
+            Color.rgb(210, 217, 233),
             Typeface.NORMAL
     );
+    hero.addView(subtitle);
+    pageContainer.addView(hero);
 
-    pageContainer.addView(subtitle);
-
-    addSpace(20);
+    addSpace(14);
 
     // Connection card
     LinearLayout connection = card();
@@ -573,7 +704,7 @@ public class MainActivity extends Activity {
 
     messageRecipient = input("Recipient User ID");
 
-    if (!activeChatUser.isEmpty()) {
+    if (activeChatUser.length() != 0) {
       messageRecipient.setText(activeChatUser);
     }
 
@@ -590,7 +721,7 @@ public class MainActivity extends Activity {
     LinearLayout chatCard = card();
 
     TextView chatTitle = text(
-            activeChatUser.isEmpty()
+            activeChatUser.length() == 0
                     ? "Conversation"
                     : "Chat with " + activeChatUser,
             18,
@@ -687,7 +818,7 @@ public class MainActivity extends Activity {
     );
 
     avatar.setGravity(Gravity.CENTER);
-    avatar.setBackground(
+    avatar.setBackgroundDrawable(
             rounded(PURPLE, 100)
     );
 
@@ -799,9 +930,9 @@ public class MainActivity extends Activity {
         keyButton.setText(key);
         keyButton.setTextSize(22);
         keyButton.setTextColor(TEXT);
-        keyButton.setAllCaps(false);
+        setAllCapsCompat(keyButton, false);
 
-        keyButton.setBackground(
+        keyButton.setBackgroundDrawable(
                 rounded(CARD2, 100)
         );
 
@@ -841,7 +972,7 @@ public class MainActivity extends Activity {
 
       String s = peerId.getText().toString();
 
-      if (!s.isEmpty()) {
+      if (s.length() != 0) {
         peerId.setText(
                 s.substring(0, s.length() - 1)
         );
@@ -911,7 +1042,8 @@ public class MainActivity extends Activity {
     server = input(
             "Server URL"
     );
-    server.setText(savedServerUrl);
+    server.setText(savedServerUrl == null || savedServerUrl.trim().length() == 0
+            ? DEFAULT_SERVER_URL : savedServerUrl);
 
     network.addView(
             server,
@@ -920,6 +1052,17 @@ public class MainActivity extends Activity {
                     dp(52)
             )
     );
+
+    addSpaceTo(network, 8);
+    TextView serverHint = text(
+            apiLevel() <= 13
+                    ? "Android 1–3: legacy TLS mode requires a compatible local proxy. Wolfius's current upstream build disables upstream certificate verification; use test IDs only."
+                    : "Quick Tunnel URL • temporary; it may change when the tunnel restarts.",
+            12,
+            MUTED,
+            Typeface.NORMAL
+    );
+    network.addView(serverHint);
 
     pageContainer.addView(network);
 
@@ -996,7 +1139,7 @@ public class MainActivity extends Activity {
     String uid =
             userId.getText().toString().trim();
 
-    if (serverUrl.isEmpty()) {
+    if (serverUrl.length() == 0) {
       Toast.makeText(
               this,
               "Enter a server URL first",
@@ -1005,7 +1148,7 @@ public class MainActivity extends Activity {
       return;
     }
 
-    if (uid.isEmpty()) {
+    if (uid.length() == 0) {
       Toast.makeText(
               this,
               "Enter your User ID first",
@@ -1016,6 +1159,10 @@ public class MainActivity extends Activity {
 
     savedServerUrl = serverUrl;
     savedUserId = uid;
+    getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit()
+            .putString("serverUrl", savedServerUrl)
+            .putString("userId", savedUserId)
+            .commit();
 
     try {
 
@@ -1030,17 +1177,19 @@ public class MainActivity extends Activity {
 
       final URI endpoint = URI.create(wsUrl);
 
-      ws = new WebSocketClient(endpoint) {
+      // Android 17 requires a runtime permission for direct LAN access.
+      if (apiLevel() >= 37
+              && isLikelyLocalNetworkHost(endpoint.getHost())
+              && checkSelfPermission("android.permission.ACCESS_LOCAL_NETWORK")
+                      != PackageManager.PERMISSION_GRANTED) {
+        requestPermissions(
+                new String[]{"android.permission.ACCESS_LOCAL_NETWORK"},
+                REQUEST_LOCAL_NETWORK
+        );
+        return;
+      }
 
-        @Override
-        protected void onSetSSLParameters(SSLParameters sslParameters) {
-          // Android 4.3 does not implement
-          // SSLParameters.setEndpointIdentificationAlgorithm().
-          // Do not call the library's default implementation on old Android.
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            super.onSetSSLParameters(sslParameters);
-          }
-        }
+      ws = new WebSocketClient(endpoint) {
 
         @Override
         public void onOpen(ServerHandshake h) {
@@ -1113,7 +1262,7 @@ public class MainActivity extends Activity {
                 boolean remote
         ) {
 
-          ui("Disconnected" + (r == null || r.isEmpty() ? "" : ": " + r));
+          ui("Disconnected" + (r == null || r.length() == 0 ? "" : ": " + r));
           setConnected(false);
           stopAudio();
         }
@@ -1135,7 +1284,30 @@ public class MainActivity extends Activity {
         }
       };
 
-      ws.connect();
+      // Connecting the raw TCP socket is done off the UI thread. The custom
+      // SSLSocket is host-aware (SNI) and is installed before WebSocketClient
+      // starts, so the library does not create a second TLS wrapper.
+      final WebSocketClient connectingClient = ws;
+      if ("wss".equalsIgnoreCase(endpoint.getScheme())) {
+        Thread tlsConnect = new Thread(new Runnable() {
+          @Override
+          public void run() {
+            try {
+              int tlsPort = endpoint.getPort() > 0 ? endpoint.getPort() : 443;
+              connectingClient.setSocket(
+                      LegacyTlsSocketFactory.createSocket(endpoint.getHost(), tlsPort));
+              connectingClient.connect();
+            } catch (Exception e) {
+              setConnected(false);
+              ui("Secure connection failed: " + e.getMessage());
+              try { connectingClient.close(); } catch (Exception ignored) {}
+            }
+          }
+        }, "VirtualPhone-TLS-connect");
+        tlsConnect.start();
+      } else {
+        connectingClient.connect();
+      }
 
     } catch (Exception e) {
 
@@ -1264,7 +1436,7 @@ public class MainActivity extends Activity {
       } else if (t.equals("call_state")) {
 
         String incomingCallId = o.optString("callId");
-        if (!incomingCallId.isEmpty()) {
+        if (incomingCallId.length() != 0) {
           callId = incomingCallId;
         }
 
@@ -1320,7 +1492,7 @@ public class MainActivity extends Activity {
                     .toString()
                     .trim();
 
-    if (to.isEmpty()) {
+    if (to.length() == 0) {
 
       Toast.makeText(
               this,
@@ -1331,7 +1503,7 @@ public class MainActivity extends Activity {
       return;
     }
 
-    if (body.isEmpty()) {
+    if (body.length() == 0) {
       return;
     }
 
@@ -1397,7 +1569,7 @@ public class MainActivity extends Activity {
       String body = msg[2];
 
       boolean belongsToChat =
-              activeChatUser.isEmpty() ||
+              activeChatUser.length() == 0 ||
                       (
                               from.equals(me) &&
                                       to.equals(activeChatUser)
@@ -1430,7 +1602,7 @@ public class MainActivity extends Activity {
               dp(10)
       );
 
-      bubble.setBackground(
+      bubble.setBackgroundDrawable(
               rounded(
                       outgoing
                               ? ACCENT
@@ -1484,7 +1656,7 @@ public class MainActivity extends Activity {
     String peer =
             peerId.getText().toString().trim();
 
-    if (peer.isEmpty()) {
+    if (peer.length() == 0) {
 
       Toast.makeText(
               this,
@@ -1611,7 +1783,7 @@ public class MainActivity extends Activity {
                 GREEN
         );
 
-        connectionBadge.setBackground(
+        connectionBadge.setBackgroundDrawable(
                 rounded(
                         Color.rgb(20, 55, 40),
                         50
@@ -1628,7 +1800,7 @@ public class MainActivity extends Activity {
                 MUTED
         );
 
-        connectionBadge.setBackground(
+        connectionBadge.setBackgroundDrawable(
                 rounded(
                         Color.rgb(40, 43, 55),
                         50
@@ -1680,11 +1852,19 @@ public class MainActivity extends Activity {
             0
     );
 
-    e.setBackground(
+    e.setBackgroundDrawable(
             rounded(CARD2, 18)
     );
 
     return e;
+  }
+
+  // TextView.setAllCaps was added after Android 1–3.
+  // Keep old Android builds safe; older Buttons may use their theme's casing.
+  private void setAllCapsCompat(TextView view, boolean allCaps) {
+    if (apiLevel() >= 14) {
+      view.setAllCaps(allCaps);
+    }
   }
 
   Button actionButton(
@@ -1710,11 +1890,17 @@ public class MainActivity extends Activity {
             Typeface.BOLD
     );
 
-    b.setAllCaps(false);
+    setAllCapsCompat(b, false);
+    b.setMinimumHeight(dp(50));
+    b.setPadding(dp(12), dp(4), dp(12), dp(4));
 
-    b.setBackground(
+    b.setBackgroundDrawable(
             rounded(color, 20)
     );
+
+    if (apiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
+      b.setElevation(dp(1));
+    }
 
     return b;
   }
@@ -1735,12 +1921,12 @@ public class MainActivity extends Activity {
             dp(18)
     );
 
-    l.setBackground(
-            rounded(CARD, 24)
-    );
+    GradientDrawable cardBackground = rounded(CARD, 24);
+    cardBackground.setStroke(dp(1), Color.rgb(39, 48, 67));
+    l.setBackgroundDrawable(cardBackground);
 
     // View elevation was added in Android 5.0 (API 21).
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (apiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
       l.setElevation(dp(2));
     }
 

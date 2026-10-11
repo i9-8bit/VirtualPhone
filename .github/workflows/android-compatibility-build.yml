@@ -1,0 +1,177 @@
+name: Build full APK pack for Android 1–17
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - compat/android-4-to-17-baseline
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk-pack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full source
+        uses: actions/checkout@v6
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android 17 SDK
+        shell: bash
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT}}"
+          SDKMANAGER="$(find "${SDK_ROOT}/cmdline-tools" -type f -name sdkmanager | head -n 1)"
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" --install "platforms;android-37.0" "build-tools;37.0.0"
+
+      - name: Build every full APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace \
+            assembleAndroid1Debug \
+            assembleAndroid2Debug \
+            assembleAndroid3Debug \
+            assembleAndroid4Debug \
+            assembleAndroid5Debug \
+            assembleAndroid6Debug \
+            assembleAndroid7Debug \
+            assembleAndroid8Debug \
+            assembleAndroid9Debug \
+            assembleAndroid10Debug \
+            assembleAndroid11Debug \
+            assembleAndroid12Debug \
+            assembleAndroid13Debug \
+            assembleAndroid14Debug \
+            assembleAndroid15Debug \
+            assembleAndroid16Debug \
+            assembleAndroid17Debug
+
+      - name: Assemble downloadable ZIP package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/package/APKs dist/package/Source
+
+          copy_apk() {
+            local flavor="$1"
+            local filename="$2"
+            local source="android/app/build/outputs/apk/${flavor}/debug/app-${flavor}-debug.apk"
+            test -f "$source"
+            cp "$source" "dist/package/APKs/$filename"
+          }
+
+          copy_apk android1  "VirtualPhone-v1.2-Android-1-API-1-to-3.apk"
+          copy_apk android2  "VirtualPhone-v1.2-Android-2-API-4-to-10.apk"
+          copy_apk android3  "VirtualPhone-v1.2-Android-3-API-11-to-13.apk"
+          copy_apk android4  "VirtualPhone-v1.2-Android-4-API-14-to-20.apk"
+          copy_apk android5  "VirtualPhone-v1.2-Android-5-API-21-to-22.apk"
+          copy_apk android6  "VirtualPhone-v1.2-Android-6-API-23.apk"
+          copy_apk android7  "VirtualPhone-v1.2-Android-7-API-24-to-25.apk"
+          copy_apk android8  "VirtualPhone-v1.2-Android-8-API-26-to-27.apk"
+          copy_apk android9  "VirtualPhone-v1.2-Android-9-API-28.apk"
+          copy_apk android10 "VirtualPhone-v1.2-Android-10-API-29.apk"
+          copy_apk android11 "VirtualPhone-v1.2-Android-11-API-30.apk"
+          copy_apk android12 "VirtualPhone-v1.2-Android-12-API-31-to-32.apk"
+          copy_apk android13 "VirtualPhone-v1.2-Android-13-API-33.apk"
+          copy_apk android14 "VirtualPhone-v1.2-Android-14-API-34.apk"
+          copy_apk android15 "VirtualPhone-v1.2-Android-15-API-35.apk"
+          copy_apk android16 "VirtualPhone-v1.2-Android-16-API-36.apk"
+          copy_apk android17 "VirtualPhone-v1.2-Android-17-API-37.apk"
+
+          git archive --format=zip --output dist/package/Source/VirtualPhone-v1.2-Full-Source.zip HEAD
+
+          cat > dist/package/README.txt <<'EOF'
+          VirtualPhone v1.2 UI Preview — Android 1 through Android 17 APK Pack
+          ====================================================
+
+          APKs/ contains 17 COMPLETE, standalone APKs. These are full app
+          builds, not split APK sets. Install exactly one matching the Android
+          version on your device.
+
+          Android major version   API level range
+          Android 1               1–3 (Android 1.0–1.5)
+          Android 2               4–10 (Android 1.6–2.3)
+          Android 3               11–13 (Android 3.0–3.2)
+          Android 4               14–20 (Android 4.0–4.4 family)
+          Android 5               21–22
+          Android 6               23
+          Android 7               24–25
+          Android 8               26–27
+          Android 9               28
+          Android 10              29
+          Android 11              30
+          Android 12              31–32
+          Android 13              33
+          Android 14              34
+          Android 15              35
+          Android 16              36
+          Android 17              37
+
+          Every APK has its own package ID suffix, so it does not replace the
+          official com.virtualphone.i9 Alpha app. Old-family APKs declare an
+          upper SDK bound to reduce accidental installation on a different
+          Android generation.
+
+          These are debug-signed v1.2 UI Preview compatibility builds for testing, not the
+          signed official Alpha release. Android 1–3 network support is experimental.
+          The APK offers TLS 1.0 only on those old API levels so it may pass through
+          its local certificate chain and hostname. Wolfius is a separate third-party
+          app (https://github.com/gohoski/Wolfius), intended for Android 1.5–4.4,
+          and is not bundled in this ZIP. Its current upstream code disables
+          verification of the remote server certificate, so do not use that build
+          for real accounts or private data. Android 1.0/1.1 are outside Wolfius's
+          stated range. The full source archive includes README.md and
+          docs/ANDROID_1_TO_3_LEGACY_TLS.md with full setup and security notes. No certificate checks are
+          disabled inside VirtualPhone. The ZIP also contains Source/VirtualPhone-v1.2-Full-Source.zip,
+          the full repository source used to build this entire set. All APKs prefill the Quick Tunnel URL https://clan-rounds-bug-genealogy.trycloudflare.com. Cloudflare Quick Tunnel URLs are temporary and may change; recreate the tunnel and update Settings if the address expires. This is a testing setup, not a production-secure server.
+
+          Test the APK on the actual hardware/OS before relying on it. A
+          successful build is not the same thing as a physical-device test.
+          EOF
+
+          cd dist
+          zip -qr VirtualPhone-v1.2-Android-1-to-17-Full-Package.zip package
+
+      - name: Upload complete Android 1–17 ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: VirtualPhone-v1.2-Android-1-to-17-Full-Package
+          path: dist/VirtualPhone-v1.2-Android-1-to-17-Full-Package.zip
+          if-no-files-found: error
+          retention-days: 30
+
+  publish-compatibility-prerelease:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/compat/android-4-to-17-baseline'
+    needs: build-apk-pack
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download complete ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: VirtualPhone-v1.2-Android-1-to-17-Full-Package
+          path: dist
+
+      - name: Publish a separate compatibility preview release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="compat-android-1-to-17-${GITHUB_SHA:0:7}"
+          gh release create "$TAG" dist/VirtualPhone-v1.2-Android-1-to-17-Full-Package.zip \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "VirtualPhone Android 1–17 Compatibility Preview (${GITHUB_SHA:0:7})" \
+            --notes "Pre-release compatibility pack containing 17 full, version-targeted debug APKs (Android 1 through Android 17) and a ZIP of the full source tree. This is for compatibility testing, not the official signed Alpha release. Android 1–3 TLS proxy compatibility is experimental. Match the APK to the Android version; test TLS, connection, messages, calls, and permissions on real devices." \
+            --prerelease \
+            --target "${GITHUB_SHA}"
