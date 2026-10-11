@@ -6,13 +6,16 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 /**
  * Creates a connected, host-aware SSLSocket for the legacy Java-WebSocket
- * client. The platform default trust manager is retained. MainActivity also
- * verifies the peer hostname before sending the app's auth message.
+ * client. The platform default trust manager validates the certificate chain,
+ * and this class verifies the peer hostname before the WebSocket handshake.
  */
 public final class LegacyTlsSocketFactory {
     private static final int CONNECT_TIMEOUT_MS = 15000;
@@ -51,6 +54,16 @@ public final class LegacyTlsSocketFactory {
             }
 
             ssl.setEnabledProtocols(enabled.toArray(new String[enabled.size()]));
+
+            // Do TLS and hostname validation BEFORE WebSocketClient can send
+            // an HTTP Upgrade request or receive any WebSocket messages.
+            ssl.setSoTimeout(CONNECT_TIMEOUT_MS);
+            ssl.startHandshake();
+            SSLSession session = ssl.getSession();
+            if (!HttpsURLConnection.getDefaultHostnameVerifier().verify(host, session)) {
+                throw new SSLHandshakeException("TLS hostname verification failed");
+            }
+            ssl.setSoTimeout(0);
             return ssl;
         } catch (IOException e) {
             try { tcp.close(); } catch (IOException ignored) {}
