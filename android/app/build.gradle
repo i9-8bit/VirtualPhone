@@ -19,7 +19,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android1"
             versionCode 301
-            versionName "v1.2 UI Preview - Android 1"
+            versionName "v1.2.0 - Android 1"
             minSdk 1
             targetSdk 3
             maxSdk = 3
@@ -29,7 +29,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android2"
             versionCode 302
-            versionName "v1.2 UI Preview - Android 2"
+            versionName "v1.2.0 - Android 2"
             minSdk 4
             targetSdk 10
             maxSdk = 10
@@ -39,7 +39,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android3"
             versionCode 303
-            versionName "v1.2 UI Preview - Android 3"
+            versionName "v1.2.0 - Android 3"
             minSdk 11
             targetSdk 13
             maxSdk = 13
@@ -49,7 +49,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android4"
             versionCode 304
-            versionName "v1.2 UI Preview - Android 4"
+            versionName "v1.2.0 - Android 4"
             minSdk 14
             targetSdk 20
             maxSdk = 20
@@ -59,7 +59,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android5"
             versionCode 305
-            versionName "v1.2 UI Preview - Android 5"
+            versionName "v1.2.0 - Android 5"
             minSdk 21
             targetSdk 22
             maxSdk = 22
@@ -69,7 +69,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android6"
             versionCode 306
-            versionName "v1.2 UI Preview - Android 6"
+            versionName "v1.2.0 - Android 6"
             minSdk 23
             targetSdk 23
             maxSdk = 23
@@ -79,7 +79,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android7"
             versionCode 307
-            versionName "v1.2 UI Preview - Android 7"
+            versionName "v1.2.0 - Android 7"
             minSdk 24
             targetSdk 25
             maxSdk = 25
@@ -89,7 +89,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android8"
             versionCode 308
-            versionName "v1.2 UI Preview - Android 8"
+            versionName "v1.2.0 - Android 8"
             minSdk 26
             targetSdk 27
             maxSdk = 27
@@ -99,7 +99,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android9"
             versionCode 309
-            versionName "v1.2 UI Preview - Android 9"
+            versionName "v1.2.0 - Android 9"
             minSdk 28
             targetSdk 28
             maxSdk = 28
@@ -109,7 +109,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android10"
             versionCode 310
-            versionName "v1.2 UI Preview - Android 10"
+            versionName "v1.2.0 - Android 10"
             minSdk 29
             targetSdk 29
             maxSdk = 29
@@ -119,7 +119,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android11"
             versionCode 311
-            versionName "v1.2 UI Preview - Android 11"
+            versionName "v1.2.0 - Android 11"
             minSdk 30
             targetSdk 30
             maxSdk = 30
@@ -129,7 +129,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android12"
             versionCode 312
-            versionName "v1.2 UI Preview - Android 12"
+            versionName "v1.2.0 - Android 12"
             minSdk 31
             targetSdk 32
             maxSdk = 32
@@ -139,7 +139,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android13"
             versionCode 313
-            versionName "v1.2 UI Preview - Android 13"
+            versionName "v1.2.0 - Android 13"
             minSdk 33
             targetSdk 33
             maxSdk = 33
@@ -149,7 +149,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android14"
             versionCode 314
-            versionName "v1.2 UI Preview - Android 14"
+            versionName "v1.2.0 - Android 14"
             minSdk 34
             targetSdk 34
             maxSdk = 34
@@ -159,7 +159,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android15"
             versionCode 315
-            versionName "v1.2 UI Preview - Android 15"
+            versionName "v1.2.0 - Android 15"
             minSdk 35
             targetSdk 35
             maxSdk = 35
@@ -169,7 +169,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android16"
             versionCode 316
-            versionName "v1.2 UI Preview - Android 16"
+            versionName "v1.2.0 - Android 16"
             minSdk 36
             targetSdk 36
             maxSdk = 36
@@ -179,7 +179,7 @@ android {
             dimension "androidCompatibility"
             applicationIdSuffix ".android17"
             versionCode 317
-            versionName "v1.2 UI Preview - Android 17"
+            versionName "v1.2.0 - Android 17"
             minSdk 37
             targetSdk 37
             maxSdk = 37
@@ -192,7 +192,7 @@ android {
         minSdk 14
         targetSdk 37
         versionCode 3
-        versionName 'v1.2 UI Preview'
+        versionName 'v1.2.0'
     }
 
     compileOptions {
@@ -209,4 +209,24 @@ android {
 dependencies {
     // Kept for compatibility with the developer's Android 4.3 test phone.
     implementation 'org.java-websocket:Java-WebSocket:1.3.9'
+}
+
+// Configure release signing only when a real keystore is provided by the
+// release workflow. Never commit the keystore or its passwords to source control.
+def officialKeystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+def hasOfficialSigning = officialKeystorePath != null
+        && !officialKeystorePath.trim().isEmpty()
+        && System.getenv("ANDROID_KEYSTORE_PASSWORD") != null
+        && System.getenv("ANDROID_KEY_ALIAS") != null
+        && System.getenv("ANDROID_KEY_PASSWORD") != null
+
+if (hasOfficialSigning) {
+    android.signingConfigs.create("officialRelease") {
+        storeFile = file(officialKeystorePath)
+        storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+        keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+        keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+    }
+    android.buildTypes.getByName("release").signingConfig =
+            android.signingConfigs.getByName("officialRelease")
 }
