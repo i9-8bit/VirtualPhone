@@ -90,7 +90,7 @@ public class MainActivity extends Activity {
 
     // These Window color APIs were added in Android 5.0 (API 21).
     // The Galaxy S3 on Android 4.3 must skip them.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (apiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
       getWindow().setStatusBarColor(BG);
       getWindow().setNavigationBarColor(BG);
     }
@@ -98,14 +98,14 @@ public class MainActivity extends Activity {
     android.content.SharedPreferences prefs =
             getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
     savedServerUrl = prefs.getString("serverUrl", DEFAULT_SERVER_URL);
-    if (savedServerUrl == null || savedServerUrl.trim().isEmpty()) {
+    if (savedServerUrl == null || savedServerUrl.trim().length() == 0) {
       savedServerUrl = DEFAULT_SERVER_URL;
     }
     savedUserId = prefs.getString("userId", "");
 
     buildApp();
 
-    if (Build.VERSION.SDK_INT >= 23 &&
+    if (apiLevel() >= 23 &&
             checkSelfPermission(Manifest.permission.RECORD_AUDIO)
                     != PackageManager.PERMISSION_GRANTED) {
 
@@ -113,6 +113,33 @@ public class MainActivity extends Activity {
               new String[]{Manifest.permission.RECORD_AUDIO},
               7
       );
+    }
+  }
+
+  /*
+   * SDK_INT was added in Android API 4. Reflectively read it so the app can
+   * start on API 1–3 too; fall back to their old release strings on those OSs.
+   */
+  private int apiLevel() {
+    try {
+      return Build.VERSION.class.getField("SDK_INT").getInt(null);
+    } catch (Exception ignored) {
+      String release = Build.VERSION.RELEASE;
+      if ("1.0".equals(release)) return 1;
+      if ("1.1".equals(release)) return 2;
+      if ("1.5".equals(release)) return 3;
+      if ("1.6".equals(release)) return 4;
+      if ("2.0.1".equals(release)) return 6;
+      if ("2.0".equals(release)) return 5;
+      if ("2.1".equals(release)) return 7;
+      if ("2.2".equals(release)) return 8;
+      if ("2.3".equals(release) || "2.3.1".equals(release)
+              || "2.3.2".equals(release)) return 9;
+      if (release != null && release.startsWith("2.3")) return 10;
+      if ("3.0".equals(release)) return 11;
+      if ("3.1".equals(release)) return 12;
+      if (release != null && release.startsWith("3.2")) return 13;
+      return 1;
     }
   }
 
@@ -677,7 +704,7 @@ public class MainActivity extends Activity {
 
     messageRecipient = input("Recipient User ID");
 
-    if (!activeChatUser.isEmpty()) {
+    if (activeChatUser.length() != 0) {
       messageRecipient.setText(activeChatUser);
     }
 
@@ -694,7 +721,7 @@ public class MainActivity extends Activity {
     LinearLayout chatCard = card();
 
     TextView chatTitle = text(
-            activeChatUser.isEmpty()
+            activeChatUser.length() == 0
                     ? "Conversation"
                     : "Chat with " + activeChatUser,
             18,
@@ -945,7 +972,7 @@ public class MainActivity extends Activity {
 
       String s = peerId.getText().toString();
 
-      if (!s.isEmpty()) {
+      if (s.length() != 0) {
         peerId.setText(
                 s.substring(0, s.length() - 1)
         );
@@ -1015,7 +1042,7 @@ public class MainActivity extends Activity {
     server = input(
             "Server URL"
     );
-    server.setText(savedServerUrl == null || savedServerUrl.trim().isEmpty()
+    server.setText(savedServerUrl == null || savedServerUrl.trim().length() == 0
             ? DEFAULT_SERVER_URL : savedServerUrl);
 
     network.addView(
@@ -1028,7 +1055,9 @@ public class MainActivity extends Activity {
 
     addSpaceTo(network, 8);
     TextView serverHint = text(
-            "Quick Tunnel URL • temporary; it may change when the tunnel restarts.",
+            apiLevel() <= 13
+                    ? "Android 1–3: legacy TLS mode requires a compatible local proxy. Wolfius's current upstream build disables upstream certificate verification; use test IDs only."
+                    : "Quick Tunnel URL • temporary; it may change when the tunnel restarts.",
             12,
             MUTED,
             Typeface.NORMAL
@@ -1110,7 +1139,7 @@ public class MainActivity extends Activity {
     String uid =
             userId.getText().toString().trim();
 
-    if (serverUrl.isEmpty()) {
+    if (serverUrl.length() == 0) {
       Toast.makeText(
               this,
               "Enter a server URL first",
@@ -1119,7 +1148,7 @@ public class MainActivity extends Activity {
       return;
     }
 
-    if (uid.isEmpty()) {
+    if (uid.length() == 0) {
       Toast.makeText(
               this,
               "Enter your User ID first",
@@ -1149,7 +1178,7 @@ public class MainActivity extends Activity {
       final URI endpoint = URI.create(wsUrl);
 
       // Android 17 requires a runtime permission for direct LAN access.
-      if (Build.VERSION.SDK_INT >= 37
+      if (apiLevel() >= 37
               && isLikelyLocalNetworkHost(endpoint.getHost())
               && checkSelfPermission("android.permission.ACCESS_LOCAL_NETWORK")
                       != PackageManager.PERMISSION_GRANTED) {
@@ -1233,7 +1262,7 @@ public class MainActivity extends Activity {
                 boolean remote
         ) {
 
-          ui("Disconnected" + (r == null || r.isEmpty() ? "" : ": " + r));
+          ui("Disconnected" + (r == null || r.length() == 0 ? "" : ": " + r));
           setConnected(false);
           stopAudio();
         }
@@ -1407,7 +1436,7 @@ public class MainActivity extends Activity {
       } else if (t.equals("call_state")) {
 
         String incomingCallId = o.optString("callId");
-        if (!incomingCallId.isEmpty()) {
+        if (incomingCallId.length() != 0) {
           callId = incomingCallId;
         }
 
@@ -1463,7 +1492,7 @@ public class MainActivity extends Activity {
                     .toString()
                     .trim();
 
-    if (to.isEmpty()) {
+    if (to.length() == 0) {
 
       Toast.makeText(
               this,
@@ -1474,7 +1503,7 @@ public class MainActivity extends Activity {
       return;
     }
 
-    if (body.isEmpty()) {
+    if (body.length() == 0) {
       return;
     }
 
@@ -1540,7 +1569,7 @@ public class MainActivity extends Activity {
       String body = msg[2];
 
       boolean belongsToChat =
-              activeChatUser.isEmpty() ||
+              activeChatUser.length() == 0 ||
                       (
                               from.equals(me) &&
                                       to.equals(activeChatUser)
@@ -1627,7 +1656,7 @@ public class MainActivity extends Activity {
     String peer =
             peerId.getText().toString().trim();
 
-    if (peer.isEmpty()) {
+    if (peer.length() == 0) {
 
       Toast.makeText(
               this,
@@ -1833,7 +1862,7 @@ public class MainActivity extends Activity {
   // TextView.setAllCaps was added after Android 1–3.
   // Keep old Android builds safe; older Buttons may use their theme's casing.
   private void setAllCapsCompat(TextView view, boolean allCaps) {
-    if (Build.VERSION.SDK_INT >= 14) {
+    if (apiLevel() >= 14) {
       view.setAllCaps(allCaps);
     }
   }
@@ -1869,7 +1898,7 @@ public class MainActivity extends Activity {
             rounded(color, 20)
     );
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (apiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
       b.setElevation(dp(1));
     }
 
@@ -1897,7 +1926,7 @@ public class MainActivity extends Activity {
     l.setBackgroundDrawable(cardBackground);
 
     // View elevation was added in Android 5.0 (API 21).
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (apiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
       l.setElevation(dp(2));
     }
 
