@@ -291,7 +291,7 @@ public class MainActivity extends Activity {
       b.setText(navNames[i]);
       b.setTextColor(MUTED);
       b.setTextSize(10);
-      b.setAllCaps(false);
+      setAllCapsCompat(b, false);
       b.setPadding(dp(2), 0, dp(2), 0);
       b.setBackgroundDrawable(rounded(Color.rgb(17, 20, 30), 15));
       navButtons[i] = b;
@@ -342,7 +342,7 @@ public class MainActivity extends Activity {
     getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit()
             .putString("serverUrl", savedServerUrl)
             .putString("userId", savedUserId)
-            .apply();
+            .commit();
     pageContainer.removeAllViews();
 
     switch (page) {
@@ -903,7 +903,7 @@ public class MainActivity extends Activity {
         keyButton.setText(key);
         keyButton.setTextSize(22);
         keyButton.setTextColor(TEXT);
-        keyButton.setAllCaps(false);
+        setAllCapsCompat(keyButton, false);
 
         keyButton.setBackgroundDrawable(
                 rounded(CARD2, 100)
@@ -1133,7 +1133,7 @@ public class MainActivity extends Activity {
     getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit()
             .putString("serverUrl", savedServerUrl)
             .putString("userId", savedUserId)
-            .apply();
+            .commit();
 
     try {
 
@@ -1830,6 +1830,14 @@ public class MainActivity extends Activity {
     return e;
   }
 
+  // TextView.setAllCaps was added after Android 1–3.
+  // Keep old Android builds safe; older Buttons may use their theme's casing.
+  private void setAllCapsCompat(TextView view, boolean allCaps) {
+    if (Build.VERSION.SDK_INT >= 14) {
+      view.setAllCaps(allCaps);
+    }
+  }
+
   Button actionButton(
           String label,
           int color
@@ -1853,7 +1861,7 @@ public class MainActivity extends Activity {
             Typeface.BOLD
     );
 
-    b.setAllCaps(false);
+    setAllCapsCompat(b, false);
     b.setMinimumHeight(dp(50));
     b.setPadding(dp(12), dp(4), dp(12), dp(4));
 
