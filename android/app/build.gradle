@@ -6,6 +6,20 @@ android {
     namespace 'com.virtualphone.i9'
     compileSdk 37
 
+    flavorDimensions += "distribution"
+
+    productFlavors {
+        standard {
+            dimension "distribution"
+        }
+        compatibilityTest {
+            dimension "distribution"
+            // Allows safe installation alongside the existing Alpha APK.
+            applicationIdSuffix ".compatTest"
+            versionNameSuffix "-compat-test"
+        }
+    }
+
     defaultConfig {
         applicationId 'com.virtualphone.i9'
         // Android 4.0 (API 14); actual TLS capability depends on system provider.
