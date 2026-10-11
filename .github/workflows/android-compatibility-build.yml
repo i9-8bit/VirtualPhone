@@ -124,13 +124,14 @@ jobs:
           These are debug-signed v1.2 UI Preview compatibility builds for testing, not the
           signed official Alpha release. Android 1–3 network support is experimental.
           The APK offers TLS 1.0 only on those old API levels so it may pass through
-          a properly configured transparent legacy-TLS proxy while still checking
           its local certificate chain and hostname. Wolfius is a separate third-party
-          app intended for Android 1.5–4.4, not bundled in this ZIP. Its current
-          upstream code disables verification of the remote server certificate, so
-          do not use that build for real accounts or private data. Android 1.0/1.1
-          are outside Wolfius's stated range. No certificate checks are disabled
-          inside VirtualPhone. The ZIP also contains Source/VirtualPhone-v1.2-Full-Source.zip,
+          app (https://github.com/gohoski/Wolfius), intended for Android 1.5–4.4,
+          and is not bundled in this ZIP. Its current upstream code disables
+          verification of the remote server certificate, so do not use that build
+          for real accounts or private data. Android 1.0/1.1 are outside Wolfius's
+          stated range. See Source/README.md and the repository guide at
+          docs/ANDROID_1_TO_3_LEGACY_TLS.md for details. No certificate checks are
+          disabled inside VirtualPhone. The ZIP also contains Source/VirtualPhone-v1.2-Full-Source.zip,
           the full repository source used to build this entire set. All APKs prefill the Quick Tunnel URL https://clan-rounds-bug-genealogy.trycloudflare.com. Cloudflare Quick Tunnel URLs are temporary and may change; recreate the tunnel and update Settings if the address expires. This is a testing setup, not a production-secure server.
 
           Test the APK on the actual hardware/OS before relying on it. A
