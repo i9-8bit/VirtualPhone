@@ -21,3 +21,9 @@ See [Android 1–3 legacy TLS guide](docs/ANDROID_1_TO_3_LEGACY_TLS.md) before t
 - [Draft compatibility pull request](https://github.com/i9-8bit/VirtualPhone/pull/1)
 
 These are debug-signed preview APKs for testing, not the official signed Alpha release. Test on the target physical device before relying on a build.
+
+## Official signed releases
+
+The all-version compatibility ZIP is a debug-signed test build, not the official signed release. The repository now includes an official release workflow that produces individually downloadable signed APKs for Android 1–17 once the repository signing secrets are configured. Follow [OFFICIAL_ANDROID_RELEASE.md](docs/OFFICIAL_ANDROID_RELEASE.md) for the exact steps. The workflow deliberately fails instead of publishing unsigned APKs when the signing secrets are missing.
+
+The Android 1–3 networking path remains experimental and has not been verified on physical devices. A stable release signature does not mean every legacy OS/device has been tested.
