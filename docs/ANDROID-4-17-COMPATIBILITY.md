@@ -40,3 +40,8 @@ Before publishing a new APK, test on:
 - Current Android 17 API 37 emulator/device: local-network permission, public WSS, large-screen resizing, audio permissions, reconnect, and messaging.
 
 A successful configuration edit is not proof that all OS/device combinations are supported.
+
+
+## Safe test APK
+
+The CI workflow produces a *compatibility test* APK with application ID `com.virtualphone.i9.compatTest`, so it can be installed alongside the existing Alpha APK without uninstalling or replacing it. It is a debug-signed test build, not a release APK. Do not publish it as the official Alpha. The workflow retains the APK artifact for 14 days.
