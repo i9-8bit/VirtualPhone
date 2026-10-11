@@ -22,7 +22,8 @@ android {
             versionName "v1.0 Alpha - Android 4"
             minSdk 14
             targetSdk 20
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 4", maxSdkVersion: "20"]
+            maxSdk = 20
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 4"]
         }
         android5 {
             dimension "androidCompatibility"
@@ -31,7 +32,8 @@ android {
             versionName "v1.0 Alpha - Android 5"
             minSdk 21
             targetSdk 22
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 5", maxSdkVersion: "22"]
+            maxSdk = 22
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 5"]
         }
         android6 {
             dimension "androidCompatibility"
@@ -40,7 +42,8 @@ android {
             versionName "v1.0 Alpha - Android 6"
             minSdk 23
             targetSdk 23
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 6", maxSdkVersion: "23"]
+            maxSdk = 23
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 6"]
         }
         android7 {
             dimension "androidCompatibility"
@@ -49,7 +52,8 @@ android {
             versionName "v1.0 Alpha - Android 7"
             minSdk 24
             targetSdk 25
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 7", maxSdkVersion: "25"]
+            maxSdk = 25
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 7"]
         }
         android8 {
             dimension "androidCompatibility"
@@ -58,7 +62,8 @@ android {
             versionName "v1.0 Alpha - Android 8"
             minSdk 26
             targetSdk 27
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 8", maxSdkVersion: "27"]
+            maxSdk = 27
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 8"]
         }
         android9 {
             dimension "androidCompatibility"
@@ -67,7 +72,8 @@ android {
             versionName "v1.0 Alpha - Android 9"
             minSdk 28
             targetSdk 28
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 9", maxSdkVersion: "28"]
+            maxSdk = 28
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 9"]
         }
         android10 {
             dimension "androidCompatibility"
@@ -76,7 +82,8 @@ android {
             versionName "v1.0 Alpha - Android 10"
             minSdk 29
             targetSdk 29
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 10", maxSdkVersion: "29"]
+            maxSdk = 29
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 10"]
         }
         android11 {
             dimension "androidCompatibility"
@@ -85,7 +92,8 @@ android {
             versionName "v1.0 Alpha - Android 11"
             minSdk 30
             targetSdk 30
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 11", maxSdkVersion: "30"]
+            maxSdk = 30
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 11"]
         }
         android12 {
             dimension "androidCompatibility"
@@ -94,7 +102,8 @@ android {
             versionName "v1.0 Alpha - Android 12"
             minSdk 31
             targetSdk 32
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 12", maxSdkVersion: "32"]
+            maxSdk = 32
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 12"]
         }
         android13 {
             dimension "androidCompatibility"
@@ -103,7 +112,8 @@ android {
             versionName "v1.0 Alpha - Android 13"
             minSdk 33
             targetSdk 33
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 13", maxSdkVersion: "33"]
+            maxSdk = 33
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 13"]
         }
         android14 {
             dimension "androidCompatibility"
@@ -112,7 +122,8 @@ android {
             versionName "v1.0 Alpha - Android 14"
             minSdk 34
             targetSdk 34
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 14", maxSdkVersion: "34"]
+            maxSdk = 34
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 14"]
         }
         android15 {
             dimension "androidCompatibility"
@@ -121,7 +132,8 @@ android {
             versionName "v1.0 Alpha - Android 15"
             minSdk 35
             targetSdk 35
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 15", maxSdkVersion: "35"]
+            maxSdk = 35
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 15"]
         }
         android16 {
             dimension "androidCompatibility"
@@ -130,7 +142,8 @@ android {
             versionName "v1.0 Alpha - Android 16"
             minSdk 36
             targetSdk 36
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 16", maxSdkVersion: "36"]
+            maxSdk = 36
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 16"]
         }
         android17 {
             dimension "androidCompatibility"
@@ -139,7 +152,8 @@ android {
             versionName "v1.0 Alpha - Android 17"
             minSdk 37
             targetSdk 37
-            manifestPlaceholders = [appLabel: "VirtualPhone Android 17", maxSdkVersion: "37"]
+            maxSdk = 37
+            manifestPlaceholders = [appLabel: "VirtualPhone Android 17"]
         }
     }
 
