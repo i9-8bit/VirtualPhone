@@ -336,8 +336,9 @@ public class MainActivity extends Activity {
     root.addView(nav);
 
     // Keep content clear of status/navigation bars and display cutouts on modern phones.
-    // Guard the API-20 WindowInsets listener so legacy Android versions keep their old layout.
-    if (apiLevel() >= 20) {
+    // Android 15+ enforces edge-to-edge for the corresponding modern-target APKs.
+    // Older releases use the normal decor insets already; don't add them twice.
+    if (apiLevel() >= 35) {
       final int originalLeft = root.getPaddingLeft();
       final int originalTop = root.getPaddingTop();
       final int originalRight = root.getPaddingRight();
