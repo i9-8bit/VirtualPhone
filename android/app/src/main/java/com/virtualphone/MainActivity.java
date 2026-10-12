@@ -10,6 +10,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
@@ -333,6 +334,28 @@ public class MainActivity extends Activity {
     }
 
     root.addView(nav);
+
+    // Keep content clear of status/navigation bars and display cutouts on modern phones.
+    // Guard the API-20 WindowInsets listener so legacy Android versions keep their old layout.
+    if (apiLevel() >= 20) {
+      final int originalLeft = root.getPaddingLeft();
+      final int originalTop = root.getPaddingTop();
+      final int originalRight = root.getPaddingRight();
+      final int originalBottom = root.getPaddingBottom();
+      root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+        @Override
+        public android.view.WindowInsets onApplyWindowInsets(
+                View view, android.view.WindowInsets insets) {
+          view.setPadding(
+                  originalLeft + insets.getSystemWindowInsetLeft(),
+                  originalTop + insets.getSystemWindowInsetTop(),
+                  originalRight + insets.getSystemWindowInsetRight(),
+                  originalBottom + insets.getSystemWindowInsetBottom());
+          return insets;
+        }
+      });
+      root.requestApplyInsets();
+    }
 
     setContentView(root);
 
